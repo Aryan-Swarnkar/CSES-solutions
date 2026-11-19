@@ -1,72 +1,87 @@
-#include <bits/stdc++.h>
 
+#include <bits/stdc++.h>
 using namespace std;
 
-int main(){
-  ios::sync_with_stdio(false);
-  cin.tie(nullptr);
+int main() {
+    string s;
+    cin >> s;
 
-  string s;
-  cin>>s;
+    int n = s.size();
 
-  int n = s.size();
+    // Count frequency of every character.
+    int freq[26] = {0};
 
-  map<char, int> freq;
-
-  for(char c : s){
-    freq[c]++;
-  }
-
-  int mx = 0;
-
-  for(auto [ch, count] : freq){
-    mx = max(mx, count);
-  }
-
-  if(mx > (n + 1) / 2){
-    cout << -1 << endl;
-    return 0;
-  }
-
-  string ans;
-  ans.reserve(n);
-
-  char prev = '#';
-
-  for(int pos = 0;pos < n;pos++){
-
-    for(char c = 'A';c <= 'Z';c++){
-
-      if(freq[c] == 0){
-        continue;
-      }
-
-      if(c == prev){
-        continue;
-      }
-
-      freq[c]--;
-
-      int remaining = n - pos - 1;
-
-      int maxFreq = 0;
-      for(auto [ch, count] : freq){
-        maxFreq = max(maxFreq, count);
-      }
-
-      if(maxFreq <= (remaining + 1) / 2){
-        
-        ans += c;
-        prev = c;
-
-        break;
-      }
-
-      freq[c]++;
+    for (char c : s) {
+        freq[c - 'A']++;
     }
-  }
 
-  cout << ans << endl;
-  
-  return 0;
+    // Check if rearrangement is possible.
+    int mx = 0;
+
+    for (int i = 0; i < 26; i++) {
+        mx = max(mx, freq[i]);
+    }
+
+    if (mx > (n + 1) / 2) {
+        cout << -1 << '\n';
+        return 0;
+    }
+
+    string ans = "";
+    int prev = -1;
+
+    for (int pos = 0; pos < n; pos++) {
+
+        int remaining = n - pos - 1;
+
+        // Find largest and second-largest frequencies.
+        int largest = 0, second = 0, largestCount = 0;
+
+        for (int i = 0; i < 26; i++) {
+            if (freq[i] > largest) {
+                second = largest;
+                largest = freq[i];
+                largestCount = 1;
+            }
+            else if (freq[i] == largest && freq[i] > 0) {
+                largestCount++;
+            }
+            else if (freq[i] > second) {
+                second = freq[i];
+            }
+        }
+
+        // Try characters alphabetically.
+        for (int c = 0; c < 26; c++) {
+
+            if (freq[c] == 0 || c == prev)
+                continue;
+
+            int newMax = largest;
+
+            if (freq[c] == largest && largestCount == 1) {
+                newMax = max(largest - 1, second);
+            }
+
+            // Check whether remaining characters can be arranged.
+            if (newMax > (remaining + 1) / 2)
+                continue;
+
+            // IMPORTANT FIX:
+            // The newly selected character cannot appear
+            // more than remaining / 2 times.
+            if (freq[c] - 1 > remaining / 2)
+                continue;
+
+            ans += char('A' + c);
+            freq[c]--;
+            prev = c;
+
+            break;
+        }
+    }
+
+    cout << ans << '\n';
+
+    return 0;
 }
