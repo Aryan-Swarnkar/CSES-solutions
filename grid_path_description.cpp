@@ -2,76 +2,59 @@
 
 using namespace std;
 
-string s;
+string path;
+bool vis[9][9];
 
-bool visited[7][7];
+int dx[] = {1, -1, 0, 0};
+int dy[] = {0, 0, 1, -1};
+char dir[] = {'D', 'U', 'R', 'L'};
 
-int dr[] = {1, -1, 0, 0};
-int dc[] = {0, 0, -1, 1};
-
-char dir[] = {'D', 'U', 'L', 'R'};
-
-long long dfs(int r, int c, int step){
-
-  if(step == 48){
-    return (r == 6 && c == 0);
+int dfs(int x, int y, int step){
+  if(x == 7 && y == 1){
+    return step == 48;
   }
 
-  if(r == 6 && c == 0){
-    return 0;
-  }
+  if(step == 48) return 0;
 
-  bool up = (r == 0 || visited[r-1][c]);
-  bool down = (r == 6 || visited[r+1][c]);
-  bool left = (c == 0 || visited[r][c-1]);
-  bool right = (c == 6 || visited[r][c+1]); 
+  if((vis[x-1][y] && vis[x+1][y] &&
+    !vis[x][y-1] && !vis[x][y+1]) ||
+    (!vis[x-1][y] && !vis[x+1][y] && 
+      vis[x][y-1] && vis[x][y+1])) {
+        return 0;
+      }
+  int ans = 0;
+  for(int d = 0;d < 4;d++){
+    int nx = x + dx[d];
+    int ny = y + dy[d];
 
-  if(up && down && !left && !right){
-    return 0;
-  }
-
-  if(left && right && !up && !down){
-    return 0;
-  }
-
-  long long ways = 0;
-
-  for(int i = 0;i < 4;i++){
-
-    if(s[step] != '?' && s[step] != dir[k])
+    if(path[step] != '?' && path[step] != dir[d])
       continue;
 
-    int nr = r + dr[i];
-    int nc = c + dc[i];
-
-    if(nr < 0 || nr >= 7 || nc >= 7 && nc < 0){
-      continue;
-    }
-
-    if(visited[nr][nc])
+    if(vis[nx][ny])
       continue;
 
-    visited[nr][nc] = true;
+    vis[nx][ny] = true;
 
-    ways += dfs(nr, nc, step + 1);
+    ans += dfs(nx, ny, step + 1);
 
-    visited[nr][nc] = false;
-    
+    vis[nx][ny] = false;
   }
 
-  return ways;
+  return ans;
 }
 
 int main(){
+  cin>>path;
 
-  ios::sync_with_stdio(false);
-  cin.tie(nullptr);
+  for(int i = 0;i < 9;i++){
+    vis[0][i] = true;
+    vis[8][i] = true;
+    vis[i][0] = true;
+    vis[i][8] = true;
+  }
 
-  cin>>s;
+  vis[1][1] = true;
 
-  visited[0][0] = true;
-
-  cout << dfs(0, 0, 0) << endl;
-  
+  cout << dfs(1, 1, 0) << '\n';
   return 0;
 }
